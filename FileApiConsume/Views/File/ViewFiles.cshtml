@@ -1,0 +1,38 @@
+﻿@using FileApiConsume.DTO
+@model List<ViewFileDto>
+
+@{
+    ViewData["Title"] = "Files";
+}
+
+<h2>Uploaded Files</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Image Name</th>
+            <th>Preview</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var file in Model)
+        {
+            <tr>
+                <td>@file.ImgName</td>
+                <td>
+                    @if (!string.IsNullOrEmpty(file.ImgPath))
+                    {
+                        <img src="@($"https://localhost:7278/{file.ImgPath}")" 
+                             alt="@file.ImgName" 
+                             width="150" 
+                             height="150" />
+                    }
+                    else
+                    {
+                        <span>No image</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
