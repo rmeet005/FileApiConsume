@@ -1,6 +1,8 @@
 ﻿using FileApiConsume.DTO;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System.Net.Http;
+using System.Text;
 
 namespace FileApiConsume.Controllers
 {
@@ -62,6 +64,29 @@ namespace FileApiConsume.Controllers
             }
 
             return View(files);
+        }
+        [HttpPost]
+        public IActionResult SoftDeleteImages([FromBody] List<int> ids)
+        {
+            if (ids == null || ids.Count == 0)
+                return BadRequest("No IDs provided.");
+
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Delete,
+                RequestUri = new Uri("https://localhost:7278/api/Files/DeleteFiles"),
+                Content = new StringContent(JsonConvert.SerializeObject(ids), Encoding.UTF8, "application/json")
+            };
+
+            var response = client.SendAsync(request).Result;
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = response.Content.ReadAsStringAsync().Result; 
+                return StatusCode((int)response.StatusCode, errorContent);
+            }
+
+            return Ok(new { message = "Images deleted successfully" });
         }
 
     }

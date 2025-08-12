@@ -1,5 +1,6 @@
 ﻿@using FileApiConsume.DTO
-@model List<ViewFileDto>
+@* @model List<ViewFileDto> *@
+@model IEnumerable<ViewFileDto>
 
 @{
     ViewData["Title"] = "Files";
@@ -7,32 +8,81 @@
 
 <h2>Uploaded Files</h2>
 
+<p>
+    <button id="deleteSelected" type="button" class="btn btn-danger">Delete Selected</button>
+</p>
+
 <table class="table table-bordered">
     <thead>
         <tr>
-            <th>Image Name</th>
-            <th>Preview</th>
+            @* <th>Image Name</th>
+            <th>Preview</th> *@
+            <th>
+                <input type="checkbox" id="selectAll" />
+            </th>
+            <th>@Html.DisplayNameFor(model => model.Id)</th>
+            <th>@Html.DisplayNameFor(model => model.ImgName)</th>
+            <th>Image</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var file in Model)
+        @foreach (var item in Model)
         {
             <tr>
-                <td>@file.ImgName</td>
                 <td>
-                    @if (!string.IsNullOrEmpty(file.ImgPath))
-                    {
-                        <img src="@($"https://localhost:7278/{file.ImgPath}")" 
-                             alt="@file.ImgName" 
-                             width="150" 
-                             height="150" />
-                    }
-                    else
-                    {
-                        <span>No image</span>
-                    }
+                    <input type="checkbox" value="@item.Id" class="selectItem" />
                 </td>
+                <td>@item.Id</td>
+                <td>@item.ImgName</td>
+                <td><img src="@($"https://localhost:7278/{item.ImgPath}")" alt="@item.ImgName" width="80" height="80" /></td>
             </tr>
         }
     </tbody>
 </table>
+@section Scripts 
+{
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+
+            // Select/Deselect all checkboxes
+            $("#selectAll").click(function () {
+                $(".selectItem").prop("checked", $(this).prop("checked"));
+            });
+
+            // Delete selected items
+            $("#deleteSelected").click(function () {
+                let selectedIds = [];
+
+                $(".selectItem:checked").each(function () {
+                    selectedIds.push(parseInt($(this).val()));
+                });
+
+                if (selectedIds.length === 0) {
+                    alert("Please select at least one image to delete.");
+                    return;
+                }
+
+                if (!confirm("Are you sure you want to delete selected images?")) {
+                    return;
+                }
+
+                $.ajax({
+                    url: '/File/SoftDeleteImages', // Controller Action
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(selectedIds),
+                    success: function (response) {
+                        alert(response.message);
+                        location.reload();
+                    },
+                    error: function (xhr) {
+                        alert("Error: " + xhr.responseText);
+                    }
+                });
+            });
+
+        });
+    </script>
+    }
